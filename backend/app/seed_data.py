@@ -1,4 +1,14 @@
-"""Демонстрационные данные: справочники и несколько игр из домашней полки."""
+"""Реальная домашняя коллекция настольных игр.
+
+Факты (издатель, год, число игроков, время партии, возраст) проверены по
+BoardGameGeek, официальным страницам издателей, Википедии и российским
+магазинам (igroved.ru, lavkaigr.ru) — при расхождении между глобальным и
+российским изданием приоритет отдан российскому (например, возраст для
+Anno 1800). Категории/темы/механики тоже сверены по жанровым тегам
+российских магазинов, а не придуманы. Поле complexity (1–5) — субъективная
+оценка сложности, не с BGG. Personal-поля (location, notes, best_players,
+has_solo_mode) дозаполняются пользователем — придумывать их нельзя.
+"""
 from __future__ import annotations
 
 CATEGORIES = [
@@ -8,6 +18,7 @@ CATEGORIES = [
     ("Дуэльная", "duel", "Рассчитана ровно на двоих"),
     ("Детская", "kids", "Для самых маленьких"),
     ("Филлер", "filler", "Короткая игра между делом"),
+    ("Экономическая", "economic", "Торговля, ресурсы, производственные цепочки"),
 ]
 
 THEMES = [
@@ -27,11 +38,15 @@ THEMES = [
     ("Ренессанс", "renaissance", ""),
     ("Юмор", "humor", ""),
     ("Хоррор", "horror", ""),
+    ("Индустриализация", "industry", ""),
+    ("Шпионы", "spies", ""),
+    ("Юмор", "humor", ""),
 ]
 
 MECHANICS = [
     ("Выкладывание тайлов", "tile-laying", ""),
     ("Контроль территории", "area-control", ""),
+    ("Строительство маршрутов", "route-building", ""),
     ("Коллекционирование наборов", "set-collection", ""),
     ("Движок", "engine-building", ""),
     ("Ассоциации", "associations", ""),
@@ -45,70 +60,155 @@ MECHANICS = [
     ("Блеф", "bluffing", ""),
     ("Дедукция", "deduction", ""),
     ("Скрытые роли", "hidden-roles", ""),
+    ("Дек-билдинг", "deck-building", ""),
 ]
 
 GAMES = [
     {
-        "title": "Каркассон",
-        "title_original": "Carcassonne",
-        "slug": "carcassonne",
+        "title": "7 чудес",
+        "title_original": "7 Wonders",
+        "slug": "7-wonders",
         "description": (
-            "Классика выкладывания тайлов: игроки по очереди достраивают карту "
-            "средневековой Франции и расставляют подданных на дорогах, городах и полях. "
-            "Правила объясняются за пять минут, но борьба за крупный город идёт до последнего тайла."
+            "Драфт карт: за 3 эпохи каждый строит своё чудо света и развивает город — "
+            "военные, науку, торговлю и золото. Автор — Antoine Bauza, издатель Repos "
+            "Production, 2010 год."
         ),
-        "min_players": 2,
-        "max_players": 5,
-        "best_players": "2–3",
-        "playtime": 45,
-        "min_age": 7,
-        "complexity": 2,
-        "location": "Полка в гостиной, верхний ряд",
-        "notes": "Играем сразу с «Рекой» — партия получается ровнее.",
-        "categories": ["family"],
-        "themes": ["medieval"],
-        "mechanics": ["tile-laying", "area-control"],
-    },
-    {
-        "title": "Билет на поезд: Европа",
-        "title_original": "Ticket to Ride: Europe",
-        "slug": "ticket-to-ride-europe",
-        "description": (
-            "Собираем цветные вагоны и строим железные дороги между европейскими городами, "
-            "стараясь тайком закрыть свои маршруты раньше, чем соперник займёт нужный участок."
-        ),
-        "min_players": 2,
-        "max_players": 5,
-        "best_players": "4",
-        "playtime": 60,
-        "min_age": 8,
-        "complexity": 2,
-        "location": "Полка в гостиной, верхний ряд",
-        "notes": "",
-        "categories": ["family"],
-        "themes": ["travel"],
-        "mechanics": ["set-collection", "area-control"],
-    },
-    {
-        "title": "Крылья",
-        "title_original": "Wingspan",
-        "slug": "wingspan",
-        "description": (
-            "Орнитологический пасьянс: каждая птица, попадая в вольер, усиливает "
-            "одно из трёх действий, и к концу партии поле работает как отлаженный механизм."
-        ),
-        "min_players": 1,
-        "max_players": 5,
-        "best_players": "3",
-        "playtime": 60,
+        "min_players": 3,
+        "max_players": 7,
+        "best_players": "",
+        "playtime": 30,
         "min_age": 10,
         "complexity": 2,
-        "has_solo_mode": True,
-        "location": "Полка в гостиной, верхний ряд",
-        "notes": "Соло-режим против автомы — отличный вариант на вечер.",
+        "location": "",
+        "notes": "",
+        "categories": ["strategy"],
+        "themes": ["antiquity"],
+        "mechanics": ["drafting", "set-collection", "engine-building"],
+    },
+    {
+        "title": "7 чудес: Дуэль",
+        "title_original": "7 Wonders Duel",
+        "slug": "7-wonders-duel",
+        "description": (
+            "Дуэльный спин-офф «7 чудес» на двоих: драфт карт по общей пирамиде, "
+            "три пути к победе — военный, научный или по очкам. Bauza & Cathala, "
+            "Repos Production, 2015 год."
+        ),
+        "min_players": 2,
+        "max_players": 2,
+        "best_players": "",
+        "playtime": 30,
+        "min_age": 10,
+        "complexity": 2,
+        "location": "",
+        "notes": "",
+        "categories": ["duel"],
+        "themes": ["antiquity"],
+        "mechanics": ["drafting", "set-collection", "engine-building"],
+    },
+    {
+        "title": "Эволюция",
+        "title_original": "",
+        "slug": "evolution",
+        "description": (
+            "Российская игра о выживании видов: игроки создают животных и наделяют их "
+            "свойствами, конкурируя за еду и спасаясь от хищников. Автор — Дмитрий "
+            "Кнорре, издатель «Правильные игры»/Cognitive Games, 2010 год."
+        ),
+        "min_players": 2,
+        "max_players": 4,
+        "best_players": "",
+        "playtime": 45,
+        "min_age": 12,
+        "complexity": 3,
+        "location": "",
+        "notes": "",
         "categories": ["strategy"],
         "themes": ["nature"],
-        "mechanics": ["engine-building", "set-collection"],
+        "mechanics": ["hand-management"],
+    },
+    {
+        "title": "Колонизаторы",
+        "title_original": "Catan",
+        "slug": "catan",
+        "description": (
+            "Остров из шестиугольников: кубики решают урожай, а торговля с соперниками — "
+            "почти всё остальное. Автор — Klaus Teuber, издатель Kosmos, 1995 год."
+        ),
+        "min_players": 3,
+        "max_players": 4,
+        "best_players": "",
+        "playtime": 90,
+        "min_age": 10,
+        "complexity": 2,
+        "location": "",
+        "notes": "",
+        "categories": ["strategy", "economic"],
+        "themes": ["civilization"],
+        "mechanics": ["trading", "dice", "route-building"],
+    },
+    {
+        "title": "Гарри Поттер: Битва за Хогвартс",
+        "title_original": "Harry Potter: Hogwarts Battle",
+        "slug": "harry-potter-hogwarts-battle",
+        "description": (
+            "Кооперативный дек-билдинг по семи книгам о Гарри Поттере: команда студентов "
+            "отбивается от злодеев и усиливает свои колоды от игры к игре. Издатель — "
+            "USAopoly, 2016 год."
+        ),
+        "min_players": 2,
+        "max_players": 4,
+        "best_players": "",
+        "playtime": 45,
+        "min_age": 11,
+        "complexity": 2,
+        "location": "",
+        "notes": "",
+        "categories": ["strategy"],
+        "themes": ["fantasy"],
+        "mechanics": ["deck-building", "cooperative"],
+    },
+    {
+        "title": "Анно 1800",
+        "title_original": "Anno 1800",
+        "slug": "anno-1800",
+        "description": (
+            "Настольная адаптация видеоигры Ubisoft: развитие острова в эпоху "
+            "индустриализации, торговля и снабжение растущего населения. Автор — "
+            "Martin Wallace, издатель Kosmos, 2019 год."
+        ),
+        "min_players": 2,
+        "max_players": 4,
+        "best_players": "",
+        "playtime": 130,
+        "min_age": 14,
+        "complexity": 3,
+        "location": "",
+        "notes": "",
+        "categories": ["strategy", "economic"],
+        "themes": ["industry"],
+        "mechanics": ["drafting", "hand-management", "engine-building", "trading"],
+    },
+    {
+        "title": "Плоский мир: Анк-Морпорк",
+        "title_original": "Discworld: Ankh-Morpork",
+        "slug": "discworld-ankh-morpork",
+        "description": (
+            "По мотивам Плоского мира Терри Пратчетта: у каждого игрока свой секретный "
+            "персонаж и своё условие победы в городе, где лорд Ветинари пропал без вести. "
+            "Автор — Martin Wallace, издатель Treefrog Games, 2011 год."
+        ),
+        "min_players": 2,
+        "max_players": 4,
+        "best_players": "",
+        "playtime": 60,
+        "min_age": 11,
+        "complexity": 2,
+        "location": "",
+        "notes": "",
+        "categories": ["strategy"],
+        "themes": ["fantasy", "humor"],
+        "mechanics": ["area-control", "hidden-roles", "hand-management"],
     },
     {
         "title": "Кодовые имена",
@@ -116,272 +216,150 @@ GAMES = [
         "slug": "codenames",
         "description": (
             "Два капитана дают ассоциации одним словом, команды угадывают своих агентов "
-            "на поле из двадцати пяти карточек. Главное — не наткнуться на убийцу."
+            "на поле из карточек со словами. Автор — Vlaada Chvátil, издатель Czech Games "
+            "Edition, 2015 год (русская локализация — GaGa Games)."
         ),
         "min_players": 2,
         "max_players": 8,
-        "best_players": "6+",
+        "best_players": "",
         "playtime": 15,
         "min_age": 10,
         "complexity": 1,
-        "location": "Шкаф в спальне, коробка с филлерами",
-        "notes": "Безотказный вариант, когда гостей больше шести.",
-        "categories": ["party"],
-        "themes": ["abstract"],
-        "mechanics": ["associations", "teams"],
-    },
-    {
-        "title": "Колонизаторы",
-        "title_original": "Catan",
-        "slug": "catan",
-        "description": (
-            "Остров из шестиугольников, кубики решают урожай, а всё остальное решает торговля. "
-            "Игра, с которой у многих начинались настолки."
-        ),
-        "min_players": 3,
-        "max_players": 4,
-        "best_players": "4",
-        "playtime": 90,
-        "min_age": 10,
-        "complexity": 2,
-        "location": "Полка в гостиной, нижний ряд",
+        "location": "",
         "notes": "",
-        "categories": ["strategy"],
-        "themes": ["civilization"],
-        "mechanics": ["trading", "dice"],
+        "categories": ["party"],
+        "themes": ["spies"],
+        "mechanics": ["associations", "teams", "deduction"],
     },
     {
-        "title": "Пандемия",
-        "title_original": "Pandemic",
-        "slug": "pandemic",
+        "title": "Кодовые имена: Картинки",
+        "title_original": "Codenames: Pictures",
+        "slug": "codenames-pictures",
         "description": (
-            "Кооператив, в котором команда специалистов гасит вспышки четырёх вирусов "
-            "по всему миру. Проигрываем или выигрываем только вместе."
+            "Версия «Кодовых имён», где агенты — не слова, а картинки с несколькими "
+            "деталями, что даёт более гибкие ассоциации. Издатель — Czech Games "
+            "Edition, 2016 год."
         ),
         "min_players": 2,
-        "max_players": 4,
-        "best_players": "4",
-        "playtime": 45,
-        "min_age": 8,
-        "complexity": 2,
-        "has_solo_mode": True,
-        "location": "Полка в гостиной, нижний ряд",
-        "notes": "",
-        "categories": ["strategy"],
-        "themes": ["science"],
-        "mechanics": ["cooperative", "hand-management"],
-    },
-    {
-        "title": "Диксит",
-        "title_original": "Dixit",
-        "slug": "dixit",
-        "description": (
-            "Сюрреалистичные иллюстрации и одна фраза-ассоциация к своей карте: "
-            "нужно, чтобы угадали не все и не никто."
-        ),
-        "min_players": 3,
-        "max_players": 6,
-        "best_players": "6",
-        "playtime": 30,
-        "min_age": 8,
+        "max_players": 8,
+        "best_players": "",
+        "playtime": 15,
+        "min_age": 10,
         "complexity": 1,
-        "location": "Шкаф в спальне",
+        "location": "",
         "notes": "",
         "categories": ["party"],
-        "themes": ["fairytale"],
-        "mechanics": ["associations", "voting"],
+        "themes": ["spies"],
+        "mechanics": ["associations", "teams", "deduction"],
     },
     {
-        "title": "7 чудес: Дуэль",
-        "title_original": "7 Wonders Duel",
-        "slug": "7-wonders-duel",
-        "description": (
-            "Драфт карт античных построек на двоих: три эпохи, три способа победить "
-            "и постоянный соблазн отобрать у соперника нужную карту."
-        ),
-        "min_players": 2,
-        "max_players": 2,
-        "best_players": "2",
-        "playtime": 30,
-        "min_age": 10,
-        "complexity": 2,
-        "location": "Шкаф в спальне",
-        "notes": "Лучшая дуэлька в коллекции.",
-        "categories": ["duel"],
-        "themes": ["antiquity"],
-        "mechanics": ["drafting", "engine-building"],
-    },
-    {
-        "title": "Сплендор",
-        "title_original": "Splendor",
-        "slug": "splendor",
-        "description": (
-            "Купцы эпохи Ренессанса копят самоцветы и скупают прииски, "
-            "чтобы каждая следующая покупка обходилась дешевле предыдущей."
-        ),
-        "min_players": 2,
-        "max_players": 4,
-        "best_players": "3",
-        "playtime": 30,
-        "min_age": 10,
-        "complexity": 2,
-        "location": "Шкаф в спальне",
-        "notes": "",
-        "categories": ["family"],
-        "themes": ["renaissance"],
-        "mechanics": ["engine-building", "set-collection"],
-    },
-    {
-        "title": "Имаджинариум",
+        "title": "Детективные истории: Тигр и Дракон",
         "title_original": "",
-        "slug": "imaginarium",
+        "slug": "detective-stories-tiger-and-dragon",
         "description": (
-            "Отечественный ответ «Дикситу» с более взрослыми и ироничными иллюстрациями."
+            "Кооперативная детективная игра из серии «Детективные истории»: команда "
+            "расследует два переплетённых дела в средневековом Китае, используя "
+            "приложение-компаньон. Издатель — Hobby World."
         ),
-        "min_players": 4,
-        "max_players": 7,
-        "best_players": "6",
-        "playtime": 45,
+        "min_players": 1,
+        "max_players": 5,
+        "best_players": "",
+        "playtime": 105,
         "min_age": 12,
-        "complexity": 1,
-        "location": "Шкаф в спальне",
-        "notes": "",
-        "categories": ["party"],
-        "themes": ["fairytale"],
-        "mechanics": ["associations", "voting"],
+        "complexity": 2,
+        "location": "",
+        "notes": "Для игры нужно интернет-соединение (приложение-компаньон).",
+        "categories": ["family"],
+        "themes": ["detective", "history"],
+        "mechanics": ["cooperative", "deduction"],
     },
     {
-        "title": "Взрывные котята",
-        "title_original": "Exploding Kittens",
-        "slug": "exploding-kittens",
+        "title": "Каркассон: Big Box",
+        "title_original": "Carcassonne: Big Box",
+        "slug": "carcassonne-big-box",
         "description": (
-            "Карточная русская рулетка: тянешь карту и надеешься, что это не котёнок со взрывчаткой."
+            "Классика выкладывания тайлов (Klaus-Jürgen Wrede, Hans im Glück, 2000) "
+            "в комплекте с дополнениями «Таверны и соборы», «Купцы и зодчие» и "
+            "мини-дополнениями «Аббат», «Река», «Воздушные шары», «Гонцы», «Паромы», "
+            "«Золотые прииски», «Маг и ведьма», «Разбойники» и «Круги на полях»."
         ),
         "min_players": 2,
         "max_players": 5,
-        "best_players": "4",
-        "playtime": 15,
+        "best_players": "",
+        "playtime": 45,
         "min_age": 7,
-        "complexity": 1,
-        "location": "Шкаф в спальне, коробка с филлерами",
+        "complexity": 2,
+        "location": "",
         "notes": "",
-        "categories": ["filler", "party"],
-        "themes": ["humor"],
-        "mechanics": ["hand-management", "bluffing"],
+        "categories": ["family"],
+        "themes": ["medieval"],
+        "mechanics": ["tile-laying", "area-control"],
     },
     {
-        "title": "Манчкин",
-        "title_original": "Munchkin",
-        "slug": "munchkin",
+        "title": "Гномы-вредители",
+        "title_original": "Saboteur",
+        "slug": "saboteur",
         "description": (
-            "Пародия на подземелья и драконов, где подлость соседа — основная механика."
+            "Гномы копают тоннели к золоту, но часть игроков тайно саботирует "
+            "раскопки. Автор — Frédéric Moyersoen, издатель AMIGO, 2004 год; "
+            "в российской рознице издаётся под названием «Гномы-вредители»."
         ),
         "min_players": 3,
-        "max_players": 6,
-        "best_players": "4",
-        "playtime": 90,
-        "min_age": 10,
-        "complexity": 2,
-        "location": "Шкаф в спальне",
-        "notes": "Заканчивать партию лучше по будильнику.",
-        "categories": ["party"],
-        "themes": ["fantasy", "humor"],
-        "mechanics": ["bluffing", "hand-management"],
-    },
-    {
-        "title": "Тайное послание",
-        "title_original": "Love Letter",
-        "slug": "love-letter",
-        "description": (
-            "Шестнадцать карт, одна в руке — и целая партия дедукции, "
-            "которая помещается в карман."
-        ),
-        "min_players": 2,
-        "max_players": 4,
-        "best_players": "4",
-        "playtime": 20,
-        "min_age": 10,
-        "complexity": 1,
-        "location": "Шкаф в спальне, коробка с филлерами",
-        "notes": "",
-        "categories": ["filler"],
-        "themes": ["medieval"],
-        "mechanics": ["deduction", "bluffing"],
-    },
-    {
-        "title": "Эволюция",
-        "title_original": "",
-        "slug": "evolution",
-        "description": (
-            "Создаём животных и навешиваем на них свойства, пока соседский хищник "
-            "не решил, что наша водоплавающая — это обед."
-        ),
-        "min_players": 2,
-        "max_players": 4,
-        "best_players": "4",
-        "playtime": 45,
-        "min_age": 12,
-        "complexity": 2,
-        "location": "Полка в гостиной, нижний ряд",
-        "notes": "",
-        "categories": ["strategy"],
-        "themes": ["nature"],
-        "mechanics": ["hand-management", "bluffing"],
-    },
-    {
-        "title": "Бэнг!",
-        "title_original": "Bang!",
-        "slug": "bang",
-        "description": (
-            "Вестерн со скрытыми ролями: шериф ищет бандитов, бандиты ищут шерифа, "
-            "отступник ждёт своего момента."
-        ),
-        "min_players": 4,
-        "max_players": 7,
-        "best_players": "6",
+        "max_players": 10,
+        "best_players": "",
         "playtime": 30,
         "min_age": 8,
-        "complexity": 2,
-        "location": "Шкаф в спальне",
+        "complexity": 1,
+        "location": "",
         "notes": "",
-        "categories": ["party"],
-        "themes": ["western"],
-        "mechanics": ["hidden-roles", "deduction", "bluffing"],
+        "categories": ["party", "family"],
+        "themes": ["fantasy"],
+        "mechanics": ["hidden-roles", "route-building", "bluffing", "deduction"],
+    },
+    {
+        "title": "Гномы-вредители: Дуэль",
+        "title_original": "Saboteur: The Duel",
+        "slug": "saboteur-duel",
+        "description": (
+            "Самостоятельная версия «Гномов-вредителей» на одного или двух игроков: "
+            "соло — собрать как можно больше золота, вдвоём — собрать больше "
+            "соперника. Издатель — AMIGO, 2014 год."
+        ),
+        "min_players": 1,
+        "max_players": 2,
+        "best_players": "",
+        "playtime": 30,
+        "min_age": 8,
+        "complexity": 1,
+        "has_solo_mode": True,
+        "location": "",
+        "notes": "",
+        "categories": ["duel"],
+        "themes": ["fantasy"],
+        "mechanics": ["route-building", "hand-management"],
+    },
+    {
+        "title": "Дэни",
+        "title_original": "",
+        "slug": "deni",
+        "description": "",
+        "location": "",
+        "notes": "Уточнить полное название и данные — не опознана.",
+        "categories": [],
+        "themes": [],
+        "mechanics": [],
+    },
+    {
+        "title": "Ещё не отчислен",
+        "title_original": "",
+        "slug": "esche-ne-otchislen",
+        "description": "",
+        "location": "",
+        "notes": "Данные допишет владелица игры.",
+        "categories": [],
+        "themes": [],
+        "mechanics": [],
     },
 ]
 
-EXPANSIONS = [
-    {
-        "title": "Каркассон: Река",
-        "title_original": "Carcassonne: The River",
-        "slug": "carcassonne-the-river",
-        "base_game": "carcassonne",
-        "description": "Речные тайлы для старта партии — карта разрастается ровнее и плотнее.",
-        "min_players": 2,
-        "max_players": 5,
-        "playtime": 45,
-        "min_age": 7,
-        "complexity": 2,
-        "location": "В коробке с базой",
-        "categories": ["family"],
-        "themes": ["medieval"],
-        "mechanics": ["tile-laying"],
-    },
-    {
-        "title": "Крылья: Европа",
-        "title_original": "Wingspan: European Expansion",
-        "slug": "wingspan-european-expansion",
-        "base_game": "wingspan",
-        "description": "Птицы Европы с новыми способностями, работающими в ход соперника.",
-        "min_players": 1,
-        "max_players": 5,
-        "playtime": 60,
-        "min_age": 10,
-        "complexity": 2,
-        "has_solo_mode": True,
-        "location": "В коробке с базой",
-        "categories": ["strategy"],
-        "themes": ["nature"],
-        "mechanics": ["engine-building"],
-    },
-]
+EXPANSIONS: list[dict] = []
