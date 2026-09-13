@@ -90,6 +90,61 @@ class GamesPage(msgspec.Struct):
     pages: int
 
 
+class GameVideoIn(msgspec.Struct):
+    url: str
+    title: str = ""
+    order: int = 0
+
+
+class GameCreate(msgspec.Struct):
+    """Тело POST /api/admin/games. Категории/темы/механики — по названиям,
+    отсутствующие справочники создаются автоматически (как в Django-админке)."""
+
+    title: str
+    title_original: str = ""
+    slug: str = ""
+    description: str = ""
+    min_players: int = 1
+    max_players: int = 4
+    best_players: str = ""
+    playtime: int | None = None
+    min_age: int | None = None
+    complexity: int | None = None
+    has_solo_mode: bool = False
+    base_game_slug: str | None = None
+    location: str = ""
+    notes: str = ""
+    rules_url: str = ""
+    categories: list[str] = []
+    themes: list[str] = []
+    mechanics: list[str] = []
+    videos: list[GameVideoIn] = []
+
+
+class GameUpdate(msgspec.Struct):
+    """Тело PATCH /api/admin/games/{id}. Непереданные поля не трогаются."""
+
+    title: str | msgspec.UnsetType = msgspec.UNSET
+    title_original: str | msgspec.UnsetType = msgspec.UNSET
+    slug: str | msgspec.UnsetType = msgspec.UNSET
+    description: str | msgspec.UnsetType = msgspec.UNSET
+    min_players: int | msgspec.UnsetType = msgspec.UNSET
+    max_players: int | msgspec.UnsetType = msgspec.UNSET
+    best_players: str | msgspec.UnsetType = msgspec.UNSET
+    playtime: int | None | msgspec.UnsetType = msgspec.UNSET
+    min_age: int | None | msgspec.UnsetType = msgspec.UNSET
+    complexity: int | None | msgspec.UnsetType = msgspec.UNSET
+    has_solo_mode: bool | msgspec.UnsetType = msgspec.UNSET
+    base_game_slug: str | None | msgspec.UnsetType = msgspec.UNSET
+    location: str | msgspec.UnsetType = msgspec.UNSET
+    notes: str | msgspec.UnsetType = msgspec.UNSET
+    rules_url: str | msgspec.UnsetType = msgspec.UNSET
+    categories: list[str] | msgspec.UnsetType = msgspec.UNSET
+    themes: list[str] | msgspec.UnsetType = msgspec.UNSET
+    mechanics: list[str] | msgspec.UnsetType = msgspec.UNSET
+    videos: list[GameVideoIn] | msgspec.UnsetType = msgspec.UNSET
+
+
 class FiltersOut(msgspec.Struct):
     categories: list[TaxonomyWithCount]
     themes: list[TaxonomyWithCount]

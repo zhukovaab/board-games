@@ -26,6 +26,9 @@ class Settings:
         )
     )
 
+    # Токен для записи через /api/admin/*. Пусто = ручки записи отключены.
+    admin_api_token: str = os.getenv("ADMIN_API_TOKEN", "")
+
     @property
     def database_url(self) -> str:
         return (

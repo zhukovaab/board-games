@@ -11,6 +11,7 @@ from litestar.static_files import create_static_files_router
 
 from app.config import settings
 from app.db import provide_session
+from app.routes.admin_games import admin_router
 from app.routes.games import get_game, list_games
 from app.routes.taxonomy import get_filters
 
@@ -18,7 +19,7 @@ os.makedirs(settings.media_root, exist_ok=True)
 
 api_router = Router(
     path="/api",
-    route_handlers=[list_games, get_game, get_filters],
+    route_handlers=[list_games, get_game, get_filters, admin_router],
 )
 
 media_router = create_static_files_router(

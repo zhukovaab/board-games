@@ -65,6 +65,10 @@ nano .env.prod
 - `DJANGO_ALLOWED_HOSTS` — публичный IP сервера
 - `DJANGO_CSRF_TRUSTED_ORIGINS` — `http://<тот же IP>`
 - `DJANGO_SUPERUSER_PASSWORD`
+- `ADMIN_API_TOKEN` — `openssl rand -hex 32`. Даёт доступ к записи через
+  `POST/PATCH/DELETE /api/admin/games` (см. `backend/app/routes/admin_games.py`).
+  Пусто — ручки записи выключены. Храни как обычный секрет: не коммить,
+  не логируй, передавай себе не по открытым каналам.
 
 Файл `.env.prod` в git не попадает (в `.gitignore`) — трогать его руками
 на сервере и всё.
