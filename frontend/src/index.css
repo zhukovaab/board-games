@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-ink-950 text-slate-100 font-sans antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 15% -10%, rgba(139, 92, 246, 0.14), transparent 60%),
+      radial-gradient(50rem 35rem at 95% 0%, rgba(244, 114, 182, 0.1), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-accent/40;
+  }
+
+  /* Скроллбаров не показываем нигде: их появление меняло ширину страницы,
+     и вёрстка дёргалась, когда выдача становилась короче или длиннее. */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-line/80 bg-ink-850/70 backdrop-blur-xl;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-ink-800/80
+           px-3 py-1.5 text-xs font-medium text-mist transition-colors duration-200;
+  }
+
+  .chip-active {
+    @apply border-accent/60 bg-accent/15 text-accent-soft;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-line bg-ink-900/80 px-3.5 py-2.5 text-sm
+           text-slate-100 placeholder:text-mist/60 outline-none transition
+           focus:border-accent/70 focus:ring-2 focus:ring-accent/20;
+  }
+
+  .slider {
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink-700 outline-none;
+  }
+
+  .slider::-webkit-slider-thumb {
+    @apply h-4 w-4 cursor-grab appearance-none rounded-full bg-accent-soft;
+    box-shadow: 0 0 0 3px #07080c, 0 0 12px rgba(167, 139, 250, 0.55);
+    transition: transform 0.15s ease;
+  }
+
+  .slider::-webkit-slider-thumb:hover {
+    transform: scale(1.18);
+  }
+
+  .slider::-moz-range-thumb {
+    @apply h-4 w-4 cursor-grab rounded-full border-0 bg-accent-soft;
+    box-shadow: 0 0 0 3px #07080c, 0 0 12px rgba(167, 139, 250, 0.55);
+  }
+
+  .slider:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px #07080c, 0 0 0 6px rgba(139, 92, 246, 0.45);
+  }
+
+  /* Для двойного ползунка: сам input прозрачен, кликабелен только бегунок. */
+  .slider-bare {
+    @apply pointer-events-none absolute inset-x-0 top-1/2 h-4 w-full -translate-y-1/2
+           appearance-none bg-transparent outline-none;
+  }
+
+  .slider-bare::-webkit-slider-thumb {
+    @apply pointer-events-auto h-4 w-4 cursor-grab appearance-none rounded-full bg-accent-soft;
+    box-shadow: 0 0 0 3px #07080c, 0 0 12px rgba(167, 139, 250, 0.55);
+  }
+
+  .slider-bare::-moz-range-thumb {
+    @apply pointer-events-auto h-4 w-4 cursor-grab rounded-full border-0 bg-accent-soft;
+    box-shadow: 0 0 0 3px #07080c, 0 0 12px rgba(167, 139, 250, 0.55);
+  }
+
+  .gradient-text {
+    @apply bg-accent-gradient bg-clip-text text-transparent;
+  }
+}

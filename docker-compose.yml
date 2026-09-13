@@ -1,0 +1,76 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bg-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Порт наружу не публикуем: сервисы ходят на db:5432 внутри сети.
+    # Нужен доступ с хоста (DBeaver, psql) — подключи оверлей:
+    #   docker compose -f docker-compose.yml -f docker-compose.db-port.yml up
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: bg-backend
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+    volumes:
+      - ./backend:/app
+      - media:/media
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             if [ $${SEED_ON_START:-1} = 1 ]; then python -m app.seed; fi &&
+             litestar --app app.main:app run --host 0.0.0.0 --port 8000 --reload"
+
+  admin:
+    build: ./admin
+    container_name: bg-admin
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+    volumes:
+      - ./admin:/app
+      - media:/media
+    ports:
+      - "${ADMIN_PORT:-8001}:8000"
+    depends_on:
+      backend:
+        condition: service_started
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py wait_for_schema &&
+             python manage.py migrate --noinput &&
+             python manage.py ensure_superuser &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: bg-frontend
+    env_file: .env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+volumes:
+  pgdata:
+  media:

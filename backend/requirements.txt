@@ -1,0 +1,5 @@
+litestar[standard]>=2.13,<3
+sqlalchemy[asyncio]>=2.0,<2.1
+asyncpg>=0.29
+alembic>=1.13
+python-slugify>=8.0

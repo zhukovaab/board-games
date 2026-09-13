@@ -1,0 +1,7 @@
+# Открывает порт базы наружу. Подключается поверх основного файла:
+#   docker compose -f docker-compose.yml -f docker-compose.db-port.yml up
+# Порт задаётся в .env через POSTGRES_HOST_PORT.
+services:
+  db:
+    ports:
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
