@@ -18,14 +18,17 @@ export function Layout({ children }: { children: ReactNode }) {
           >
             {/* Игральная кость сама по себе, без плашки-подложки: заливка градиентом,
                 вокруг — прозрачно. На наведении делает вид, что вот-вот бросится,
-                на клике — короткий решительный «бросок». tabIndex=-1 — иконка
-                декоративная (aria-hidden), кликабелен сам Link вокруг; без этого
-                framer-motion из-за whileTap сам делает svg точкой табуляции, и
-                по клику браузер рисует на ней нативную синюю рамку фокуса. */}
+                на клике — короткий решительный «бросок». Иконка декоративная
+                (aria-hidden), кликабелен сам Link вокруг — но framer-motion из-за
+                whileTap всё равно делает svg фокусируемым, и клик точно по ней
+                (не по всей ссылке) фокусирует именно svg и рисует нативную синюю
+                рамку; tabIndex=-1 убирает её только из Tab, а не из клика, поэтому
+                дополнительно гасим фокусировку на mousedown через preventDefault. */}
             <motion.svg
               viewBox="0 0 32 32"
               className="h-9 w-9 shrink-0"
               tabIndex={-1}
+              onMouseDown={(event) => event.preventDefault()}
               whileHover={{ rotate: 18, scale: 1.08 }}
               whileTap={{ rotate: -22, scale: 0.92 }}
               transition={{ type: 'spring', stiffness: 420, damping: 12 }}

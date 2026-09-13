@@ -13,6 +13,14 @@
     min-height: 100%;
   }
 
+  /* На тач-устройствах (в первую очередь Safari/iOS) при нажатии на любой
+     кликабельный элемент система на мгновение подсвечивает его синеватым
+     прямоугольником — это не CSS-фокус и в Chrome на десктопе не видно,
+     но на иконках выглядит как случайная синяя обводка. Отключаем. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-ink-950 text-slate-100 font-sans antialiased;
     background-image:

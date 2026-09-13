@@ -99,10 +99,12 @@ export const GameCard = forwardRef<HTMLDivElement, Props>(function GameCard(
               <PlayersIcon />
               {playersLabel(game.min_players, game.max_players)}
             </span>
-            <span className="flex items-center gap-1 rounded-md bg-ink-950/70 px-2 py-1 backdrop-blur">
-              <ClockIcon />
-              {playtimeCompactLabel(game.playtime)}
-            </span>
+            {game.playtime !== null && (
+              <span className="flex items-center gap-1 rounded-md bg-ink-950/70 px-2 py-1 backdrop-blur">
+                <ClockIcon />
+                {playtimeCompactLabel(game.playtime)}
+              </span>
+            )}
           </div>
         </div>
 
