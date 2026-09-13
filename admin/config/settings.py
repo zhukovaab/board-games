@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "martor",
     "games",
 ]
 
@@ -87,3 +88,27 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", "/media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MARTOR_ENABLE_CONFIGS = {
+    "emoji": "false",
+    "imgur": "false",  # нет ключа Imgur — картинки вставляются по прямой ссылке
+    "mention": "false",
+    "jquery": "true",
+    "living": "false",
+    "spellcheck": "false",
+    "hljs": "true",
+}
+MARTOR_TOOLBAR_BUTTONS = [
+    "bold",
+    "italic",
+    "horizontal",
+    "heading",
+    "pre-code",
+    "blockquote",
+    "unordered-list",
+    "ordered-list",
+    "link",
+    "image-link",
+    "toggle-maximize",
+    "help",
+]

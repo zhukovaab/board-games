@@ -4,11 +4,30 @@ from __future__ import annotations
 from django.contrib import admin
 from django.db.models import Count, QuerySet
 from django.utils.html import format_html
+from martor.widgets import AdminMartorWidget
 
 from games.models import Category, Game, GameImage, Mechanic, Theme
 
 
-class TaxonomyAdmin(admin.ModelAdmin):
+class DescriptionMartorWidget(AdminMartorWidget):
+    """Панель превью martor не учитывает тёмную тему админки Django 5 —
+    без явных цветов текст превью наследует светлый --body-fg и становится
+    нечитаемым на белом фоне. Добавляем поверх фикс-стили."""
+
+    class Media:
+        css = {"all": ("games/css/martor-admin-fix.css",)}
+
+
+class MarkdownDescriptionMixin:
+    """Показывает поле description как markdown-редактор с панелью инструментов."""
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name == "description":
+            kwargs["widget"] = DescriptionMartorWidget()
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+
+
+class TaxonomyAdmin(MarkdownDescriptionMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "games_count")
     search_fields = ("name",)
     ordering = ("name",)
@@ -54,7 +73,7 @@ class GameImageInline(admin.TabularInline):
 
 
 @admin.register(Game)
-class GameAdmin(admin.ModelAdmin):
+class GameAdmin(MarkdownDescriptionMixin, admin.ModelAdmin):
     list_display = (
         "cover_preview",
         "title",

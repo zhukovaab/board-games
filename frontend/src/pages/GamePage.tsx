@@ -5,10 +5,41 @@ import { Link, useParams } from 'react-router-dom'
 
 import { api, mediaUrl } from '../api/client'
 import { Cover } from '../components/Cover'
+import { Markdown } from '../components/Markdown'
 import { Tag } from '../components/Tag'
 import { ShimmerBlock } from '../components/Skeletons'
 import { ComplexityMeter } from '../components/ComplexityMeter'
 import { ageLabel, complexityInfo, playersLabel, playtimeLabel } from '../lib/format'
+
+function ExternalLinkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" aria-hidden>
+      <path
+        d="M9 6H6.75A1.75 1.75 0 0 0 5 7.75v9.5c0 .966.784 1.75 1.75 1.75h9.5A1.75 1.75 0 0 0 18 17.25V15"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M13 5h6v6M18.5 5.5 11 13" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function DocumentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" aria-hidden>
+      <path
+        d="M7 3.75h7.5L19 8.25V19.5a.75.75 0 0 1-.75.75H7a.75.75 0 0 1-.75-.75V4.5A.75.75 0 0 1 7 3.75Z"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+      />
+      <path d="M14 3.75V8h4.25" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
+      <path d="M9 13h6M9 16.5h6" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
+    </svg>
+  )
+}
 
 function Stat({ label, value, accent }: { label: string; value: ReactNode; accent?: string }) {
   return (
@@ -151,12 +182,6 @@ export function GamePage() {
             </div>
           )}
 
-          {game.description && (
-            <p className="max-w-3xl whitespace-pre-line text-[15px] leading-relaxed text-slate-300">
-              {game.description}
-            </p>
-          )}
-
           {(game.rules_url || game.rules_file) && (
             <div className="flex flex-wrap gap-3">
               {game.rules_url && (
@@ -166,7 +191,8 @@ export function GamePage() {
                   rel="noreferrer"
                   className="chip hover:border-accent/50 hover:text-slate-100"
                 >
-                  правила онлайн ↗
+                  <ExternalLinkIcon />
+                  правила на сайте
                 </a>
               )}
               {game.rules_file && (
@@ -176,7 +202,8 @@ export function GamePage() {
                   rel="noreferrer"
                   className="chip hover:border-accent/50 hover:text-slate-100"
                 >
-                  правила файлом ↓
+                  <DocumentIcon />
+                  правила
                 </a>
               )}
             </div>
@@ -184,9 +211,16 @@ export function GamePage() {
         </div>
       </div>
 
+      {game.description && (
+        <section className="space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-mist">Описание</h2>
+          <Markdown>{game.description}</Markdown>
+        </section>
+      )}
+
       {(game.location || game.notes) && (
         <section className="panel space-y-3 p-6">
-          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-mist">Дома</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-mist">Заметки</h2>
           {game.location && (
             <p className="text-sm text-slate-200">
               <span className="text-mist">Где лежит: </span>

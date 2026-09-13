@@ -1,0 +1,30 @@
+/* Django 5 admin dark mode задаёт светлый --body-fg, который наследуется
+   в белую панель превью martor и делает текст нечитаемым. Фиксируем
+   цвета внутри превью явно, независимо от темы админки. */
+.martor-preview {
+    color: #1f2933 !important;
+    background: #fff !important;
+}
+.martor-preview :is(h1, h2, h3, h4, h5, h6, p, li, td, th, dt, dd) {
+    color: #1f2933 !important;
+}
+.martor-preview a {
+    color: #2563eb !important;
+}
+.martor-preview code {
+    color: #b91c1c !important;
+    background: #f3f4f6 !important;
+}
+.martor-preview pre {
+    background: #f3f4f6 !important;
+    color: #1f2933 !important;
+}
+.martor-preview blockquote {
+    color: #4b5563 !important;
+    border-left-color: #d1d5db !important;
+}
+.martor-preview table,
+.martor-preview th,
+.martor-preview td {
+    border-color: #d1d5db !important;
+}
