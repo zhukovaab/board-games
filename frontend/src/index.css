@@ -110,4 +110,65 @@
   .gradient-text {
     @apply bg-accent-gradient bg-clip-text text-transparent;
   }
+
+  /* Тема yet-another-react-lightbox под палитру сайта. */
+  .yarl__root {
+    --yarl__color_backdrop: rgba(7, 8, 12, 0.94);
+    --yarl__color_button: rgba(226, 232, 240, 0.85);
+    --yarl__color_button_active: #a78bfa;
+    --yarl__slide_title_color: #f8fafc;
+    --yarl__slide_description_color: #8d94a8;
+    --yarl__thumbnails_container_background_color: rgba(17, 20, 28, 0.9);
+    --yarl__thumbnails_thumbnail_background: #161a24;
+    --yarl__thumbnails_thumbnail_border_color: #252b3a;
+    --yarl__thumbnails_thumbnail_active_border_color: #8b5cf6;
+    --yarl__thumbnails_thumbnail_focus_box_shadow: 0 0 0 2px #8b5cf6;
+  }
+
+  .yarl__slide_captions_container {
+    background: linear-gradient(to top, rgba(7, 8, 12, 0.85), transparent);
+  }
+
+  .yarl__root .yarl__button {
+    transition: color 0.2s ease;
+  }
+
+  .yarl__root .yarl__navigation_prev,
+  .yarl__root .yarl__navigation_next {
+    width: 44px;
+    height: 44px;
+    margin: 0 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: rgba(7, 8, 12, 0.55);
+    border: 1px solid rgba(37, 43, 58, 0.9);
+    filter: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+
+  @media (hover: hover) {
+    .yarl__root .yarl__navigation_prev:hover,
+    .yarl__root .yarl__navigation_next:hover {
+      background-color: rgba(139, 92, 246, 0.18);
+      border-color: rgba(139, 92, 246, 0.55);
+      transform: translateY(-50%) scale(1.06);
+    }
+  }
+
+  .yarl__root .yarl__navigation_prev:disabled,
+  .yarl__root .yarl__navigation_next:disabled {
+    opacity: 0.3;
+  }
+
+  @media (hover: hover) {
+    .yarl__root .yarl__navigation_prev:disabled:hover,
+    .yarl__root .yarl__navigation_next:disabled:hover {
+      background-color: rgba(7, 8, 12, 0.55);
+      border-color: rgba(37, 43, 58, 0.9);
+      transform: translateY(-50%);
+    }
+  }
 }

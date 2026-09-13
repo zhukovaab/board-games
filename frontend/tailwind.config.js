@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  // Классы yet-another-react-lightbox рендерятся библиотекой в рантайме и нигде
+  // не встречаются текстом в .tsx — без safelist Tailwind вычищает наши
+  // переопределения для них как «неиспользуемые».
+  safelist: [{ pattern: /^yarl__/ }],
   theme: {
     extend: {
       colors: {

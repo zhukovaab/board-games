@@ -1,7 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useState, type ReactNode } from 'react'
+import { motion } from 'framer-motion'
+import { useEffect, useRef, useState, type ReactNode, type UIEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import Lightbox from 'yet-another-react-lightbox'
+import Captions from 'yet-another-react-lightbox/plugins/captions'
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
+import 'yet-another-react-lightbox/styles.css'
+import 'yet-another-react-lightbox/plugins/captions.css'
+import 'yet-another-react-lightbox/plugins/thumbnails.css'
 
 import { api, mediaUrl } from '../api/client'
 import { Cover } from '../components/Cover'
@@ -22,6 +29,32 @@ function ExternalLinkIcon() {
         strokeLinejoin="round"
       />
       <path d="M13 5h6v6M18.5 5.5 11 13" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ZoomIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" aria-hidden>
+      <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" strokeWidth={1.8} />
+      <path d="M15.5 15.5 20 20" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
+      <path d="M10.5 8v5M8 10.5h5" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" aria-hidden>
+      <path d="M15 5.5 8 12l7 6.5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0" fill="none" aria-hidden>
+      <path d="M9 5.5 16 12l-7 6.5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -68,12 +101,31 @@ function RelatedCard({ slug, title, cover }: { slug: string; title: string; cove
 
 export function GamePage() {
   const { slug = '' } = useParams()
-  const [lightbox, setLightbox] = useState<string | null>(null)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [scrollState, setScrollState] = useState({ atStart: true, atEnd: true })
+  const galleryScrollRef = useRef<HTMLDivElement>(null)
 
   const { data: game, isLoading, isError } = useQuery({
     queryKey: ['game', slug],
     queryFn: () => api.game(slug),
   })
+
+  const handleGalleryScroll = (event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget
+    setScrollState({
+      atStart: el.scrollLeft <= 8,
+      atEnd: el.scrollLeft + el.clientWidth >= el.scrollWidth - 8,
+    })
+  }
+
+  useEffect(() => {
+    const el = galleryScrollRef.current
+    if (!el) return
+    setScrollState({
+      atStart: el.scrollLeft <= 8,
+      atEnd: el.scrollLeft + el.clientWidth >= el.scrollWidth - 8,
+    })
+  }, [game?.images.length])
 
   if (isLoading) {
     return (
@@ -238,31 +290,52 @@ export function GamePage() {
       {game.images.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-mist">Галерея</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {game.images.map((image, index) => (
-              <motion.button
-                key={image.id}
-                type="button"
-                onClick={() => setLightbox(mediaUrl(image.image))}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ y: -4 }}
-                className="group overflow-hidden rounded-xl border border-line/70"
-              >
-                <div className="aspect-[4/3] overflow-hidden">
+          <div className="relative">
+            <div
+              aria-hidden
+              className={`pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-ink-950 to-transparent transition-opacity duration-300 sm:w-16 ${
+                scrollState.atStart ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+            <div
+              aria-hidden
+              className={`pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-ink-950 to-transparent transition-opacity duration-300 sm:w-16 ${
+                scrollState.atEnd ? 'opacity-0' : 'opacity-100'
+              }`}
+            />
+            <div
+              ref={galleryScrollRef}
+              onScroll={handleGalleryScroll}
+              className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-1 pb-2"
+            >
+              {game.images.map((image, index) => (
+                <motion.button
+                  key={image.id}
+                  type="button"
+                  onClick={() => setLightboxIndex(index)}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="group relative h-40 w-56 shrink-0 snap-start overflow-hidden rounded-2xl border border-line/70 shadow-card transition-colors duration-300 hover:border-accent/50"
+                >
                   <img
                     src={mediaUrl(image.image) ?? ''}
                     alt={image.caption || game.title}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                </div>
-                {image.caption && (
-                  <div className="p-2 text-left text-xs text-mist">{image.caption}</div>
-                )}
-              </motion.button>
-            ))}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-ink-950/0 to-ink-950/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="absolute right-2.5 top-2.5 flex h-7 w-7 -translate-y-1 items-center justify-center rounded-full bg-ink-950/70 text-slate-100 opacity-0 backdrop-blur transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <ZoomIcon />
+                  </div>
+                  {image.caption && (
+                    <div className="absolute inset-x-0 bottom-0 translate-y-2 p-2.5 text-left text-xs font-medium text-slate-100 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      {image.caption}
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -292,27 +365,24 @@ export function GamePage() {
         </section>
       )}
 
-      <AnimatePresence>
-        {lightbox && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setLightbox(null)}
-            className="fixed inset-0 z-50 grid place-items-center bg-ink-950/90 p-6 backdrop-blur"
-          >
-            <motion.img
-              initial={{ scale: 0.94, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-              src={lightbox}
-              alt=""
-              className="max-h-[85vh] max-w-full rounded-2xl shadow-card"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Lightbox
+        open={lightboxIndex !== null}
+        index={lightboxIndex ?? 0}
+        close={() => setLightboxIndex(null)}
+        plugins={[Zoom, Captions, Thumbnails]}
+        animation={{ swipe: 350 }}
+        carousel={{ finite: true }}
+        thumbnails={{ border: 0, borderRadius: 12, gap: 8, padding: 0, vignette: false }}
+        render={{
+          iconPrev: () => <ChevronLeftIcon />,
+          iconNext: () => <ChevronRightIcon />,
+        }}
+        slides={game.images.map((image) => ({
+          src: mediaUrl(image.image) ?? '',
+          alt: image.caption || game.title,
+          description: image.caption || undefined,
+        }))}
+      />
     </motion.article>
   )
 }
