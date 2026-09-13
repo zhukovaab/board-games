@@ -3,9 +3,38 @@ import { forwardRef } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { GameListItem } from '../api/types'
-import { complexityInfo, playersLabel, playtimeLabel } from '../lib/format'
+import { complexityInfo, playersLabel, playtimeCompactLabel } from '../lib/format'
 import { Cover } from './Cover'
 import { ComplexityMeter } from './ComplexityMeter'
+
+function PlayersIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" aria-hidden>
+      <circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth={1.8} />
+      <path
+        d="M3.5 20c0-3.6 2.9-6 5.5-6s5.5 2.4 5.5 6"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+      <path
+        d="M15.5 4.8c1.6.4 2.7 1.8 2.7 3.4 0 1.6-1.1 3-2.7 3.4M18 14.4c2 .6 3.5 2.6 3.5 5"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function ClockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth={1.8} />
+      <path d="M12 7.5V12l3 2" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 const cardVariants = {
   hidden: { opacity: 0, y: 14 },
@@ -52,7 +81,7 @@ export const GameCard = forwardRef<HTMLDivElement, Props>(function GameCard(
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink-950/90 to-transparent" />
 
-          <div className="absolute left-2 top-2 flex flex-col gap-1">
+          <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
             {game.is_expansion && (
               <span className="rounded-md bg-ink-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blush backdrop-blur">
                 дополнение
@@ -66,11 +95,13 @@ export const GameCard = forwardRef<HTMLDivElement, Props>(function GameCard(
           </div>
 
           <div className="absolute inset-x-2 bottom-2 flex items-center justify-between text-[11px] font-semibold text-slate-200">
-            <span className="rounded-md bg-ink-950/70 px-2 py-1 backdrop-blur">
-              {playersLabel(game.min_players, game.max_players)} чел.
+            <span className="flex items-center gap-1 rounded-md bg-ink-950/70 px-2 py-1 backdrop-blur">
+              <PlayersIcon />
+              {playersLabel(game.min_players, game.max_players)}
             </span>
-            <span className="rounded-md bg-ink-950/70 px-2 py-1 backdrop-blur">
-              {playtimeLabel(game.playtime)}
+            <span className="flex items-center gap-1 rounded-md bg-ink-950/70 px-2 py-1 backdrop-blur">
+              <ClockIcon />
+              {playtimeCompactLabel(game.playtime)}
             </span>
           </div>
         </div>
@@ -85,8 +116,6 @@ export const GameCard = forwardRef<HTMLDivElement, Props>(function GameCard(
                 {game.categories.map((c) => c.name).join(' · ')}
               </span>
               {game.complexity !== null && (
-                // На карточке — только шкала, без числа: места мало, а цвет и
-                // заливка сами по себе понятно передают уровень сложности.
                 <ComplexityMeter value={game.complexity} className={`shrink-0 text-[13px] ${complexity.className}`} />
               )}
             </div>

@@ -19,12 +19,14 @@ export function playtimeLabel(minutes: number | null): string {
   return rest ? `${hoursLabel} ${rest} мин` : hoursLabel
 }
 
+export function playtimeCompactLabel(minutes: number | null): string {
+  return minutes ? `${minutes}` : '—'
+}
+
 export function ageLabel(age: number | null): string {
   return age ? `${age}+` : '—'
 }
 
-// Сложность — целое число от 1 до 5, поэтому каждому значению соответствует
-// ровно одна ступень, без промежуточных порогов для дробей.
 const COMPLEXITY_STEPS: Record<number, { label: string; className: string }> = {
   1: { label: 'очень просто', className: 'text-emerald-300' },
   2: { label: 'просто', className: 'text-lime-300' },

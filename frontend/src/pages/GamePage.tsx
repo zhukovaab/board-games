@@ -236,7 +236,7 @@ export function GamePage() {
       {(game.base_game || game.expansions.length > 0) && (
         <section className="space-y-4">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-mist">
-            {game.base_game ? 'Базовая игра' : 'Дополнения на полке'}
+            {game.base_game ? 'Базовая игра' : 'Дополнения'}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {game.base_game && (
