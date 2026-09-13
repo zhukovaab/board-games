@@ -10,6 +10,11 @@ from django.db import models
 from slugify import slugify
 
 
+def is_remote_url(value: str) -> bool:
+    """True, если обложка/фото задана внешней ссылкой, а не загруженным файлом."""
+    return bool(value) and str(value).startswith(("http://", "https://"))
+
+
 class SluggedModel(models.Model):
     name = models.CharField("название", max_length=100, unique=True)
     slug = models.SlugField(

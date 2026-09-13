@@ -10,6 +10,8 @@ from app.models import Game, GameImage, GameVideo, Mechanic, Theme, Category
 def media_url(path: str) -> str | None:
     if not path:
         return None
+    if path.startswith(("http://", "https://")):
+        return path
     return f"{settings.media_url_path}/{path.lstrip('/')}"
 
 
@@ -96,13 +98,23 @@ class GameVideoIn(msgspec.Struct):
     order: int = 0
 
 
+class GameImageIn(msgspec.Struct):
+    """Фото из галереи, задаётся ссылкой (см. cover — та же логика для обложки)."""
+
+    url: str
+    caption: str = ""
+    order: int = 0
+
+
 class GameCreate(msgspec.Struct):
     """Тело POST /api/admin/games. Категории/темы/механики — по названиям,
-    отсутствующие справочники создаются автоматически (как в Django-админке)."""
+    отсутствующие справочники создаются автоматически (как в Django-админке).
+    cover/images — только ссылки: для файлов по-прежнему нужна Django-админка."""
 
     title: str
     title_original: str = ""
     slug: str = ""
+    cover: str = ""
     description: str = ""
     min_players: int = 1
     max_players: int = 4
@@ -119,6 +131,7 @@ class GameCreate(msgspec.Struct):
     themes: list[str] = []
     mechanics: list[str] = []
     videos: list[GameVideoIn] = []
+    images: list[GameImageIn] = []
 
 
 class GameUpdate(msgspec.Struct):
@@ -127,6 +140,7 @@ class GameUpdate(msgspec.Struct):
     title: str | msgspec.UnsetType = msgspec.UNSET
     title_original: str | msgspec.UnsetType = msgspec.UNSET
     slug: str | msgspec.UnsetType = msgspec.UNSET
+    cover: str | msgspec.UnsetType = msgspec.UNSET
     description: str | msgspec.UnsetType = msgspec.UNSET
     min_players: int | msgspec.UnsetType = msgspec.UNSET
     max_players: int | msgspec.UnsetType = msgspec.UNSET
@@ -143,6 +157,7 @@ class GameUpdate(msgspec.Struct):
     themes: list[str] | msgspec.UnsetType = msgspec.UNSET
     mechanics: list[str] | msgspec.UnsetType = msgspec.UNSET
     videos: list[GameVideoIn] | msgspec.UnsetType = msgspec.UNSET
+    images: list[GameImageIn] | msgspec.UnsetType = msgspec.UNSET
 
 
 class FiltersOut(msgspec.Struct):

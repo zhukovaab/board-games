@@ -1,6 +1,8 @@
-"""Наполнение базы демо-данными: python -m app.seed
+"""Наполнение базы реальными данными: python -m app.seed
 
 Скрипт идемпотентен: существующие записи (ищутся по slug) не перезаписываются.
+Чтобы подтянуть в уже существующие записи правки из seed_data.py (новое
+описание, теги, обложку и т.п.) — запусти вручную python -m app.reseed.
 """
 from __future__ import annotations
 
@@ -40,6 +42,7 @@ async def _create_game(
         title=data["title"],
         title_original=data.get("title_original", ""),
         slug=data["slug"],
+        cover=data.get("cover", ""),
         description=data.get("description", ""),
         min_players=data.get("min_players", 1),
         max_players=data.get("max_players", 4),

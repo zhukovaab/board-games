@@ -2,8 +2,9 @@
 
 Предназначено для автоматизации наполнения каталога (скрипты, импорт из BGG
 и т.п.), а не для браузера — поэтому авторизация простым Bearer-токеном
-(ADMIN_API_TOKEN), а не сессией Django. Ручной ввод и загрузка обложек/фото
-по-прежнему делаются через Django-админку.
+(ADMIN_API_TOKEN), а не сессией Django. Обложка и фото галереи задаются
+ссылками (cover/images.url) — загрузка файлов по-прежнему делается только
+через Django-админку.
 """
 from __future__ import annotations
 
@@ -27,12 +28,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.config import settings
-from app.models import Category, Game, GameVideo, Mechanic, Theme
+from app.models import Category, Game, GameImage, GameVideo, Mechanic, Theme
 from app.schemas import GameCreate, GameDetail, GameUpdate, game_detail
 
 _UPDATE_FIELDS = (
     "title",
     "title_original",
+    "cover",
     "description",
     "min_players",
     "max_players",
@@ -121,6 +123,7 @@ async def create_game(session: AsyncSession, data: GameCreate) -> GameDetail:
         title=data.title,
         title_original=data.title_original,
         slug=slug,
+        cover=data.cover,
         description=data.description,
         min_players=data.min_players,
         max_players=data.max_players,
@@ -139,6 +142,9 @@ async def create_game(session: AsyncSession, data: GameCreate) -> GameDetail:
     game.themes = await _taxonomy_by_names(session, Theme, data.themes)
     game.mechanics = await _taxonomy_by_names(session, Mechanic, data.mechanics)
     game.videos = [GameVideo(url=v.url, title=v.title, order=v.order) for v in data.videos]
+    game.images = [
+        GameImage(image=i.url, caption=i.caption, order=i.order) for i in data.images
+    ]
 
     session.add(game)
     try:
@@ -178,6 +184,10 @@ async def update_game(session: AsyncSession, game_id: int, data: GameUpdate) -> 
         game.mechanics = await _taxonomy_by_names(session, Mechanic, data.mechanics)
     if data.videos is not msgspec.UNSET:
         game.videos = [GameVideo(url=v.url, title=v.title, order=v.order) for v in data.videos]
+    if data.images is not msgspec.UNSET:
+        game.images = [
+            GameImage(image=i.url, caption=i.caption, order=i.order) for i in data.images
+        ]
 
     try:
         await session.commit()
