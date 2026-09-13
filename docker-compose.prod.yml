@@ -15,7 +15,7 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    image: ghcr.io/zhukovaab/board-games-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env.prod
     environment:
@@ -31,7 +31,7 @@ services:
              litestar --app app.main:app run --host 0.0.0.0 --port 8000"
 
   admin:
-    build: ./admin
+    image: ghcr.io/zhukovaab/board-games-admin:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env.prod
     environment:
@@ -48,14 +48,10 @@ services:
              python manage.py migrate --noinput &&
              python manage.py ensure_superuser &&
              python manage.py collectstatic --noinput &&
-             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 1"
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-      args:
-        VITE_API_URL: ""
+    image: ghcr.io/zhukovaab/board-games-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
       - "80:80"

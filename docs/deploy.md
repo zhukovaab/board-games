@@ -1,9 +1,16 @@
 # Деплой на сервер
 
-Прод-раскладка: один Ubuntu 24.04 сервер, `docker-compose.prod.yml`,
+Прод-раскладка: один Ubuntu 24.04 сервер (RUVDS), `docker-compose.prod.yml`,
 единственный публичный порт — 80 (контейнер `frontend`, он же nginx и
-reverse-proxy на backend/admin). Автодеплой — GitHub Actions при пуше в
-`main` (`.github/workflows/ci-cd.yml`).
+reverse-proxy на backend/admin).
+
+Образы **собираются в GitHub Actions**, а не на сервере: сервер маленький
+(на практике — 436 МБ RAM), сборки `npm ci`/`vite build`/`pip install`
+там либо падают по нехватке памяти, либо еле ползут. Поэтому CI
+(`.github/workflows/ci-cd.yml`) при пуше в `main` собирает три образа
+(backend, admin, frontend) и пушит их в GitHub Container Registry (GHCR),
+а сервер только делает `docker compose pull` + `up -d` — без единой
+компиляции на самом VPS.
 
 ## 1. Один раз настроить сервер
 
@@ -17,12 +24,19 @@ curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker $USER
 newgrp docker   # или перелогинься, чтобы группа применилась
 
-# порт 80 наружу (порт свободен — ничего больше на нём не висит)
+# порт 80 наружу
+sudo apt install ufw -y   # на некоторых образах не предустановлен
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
-sudo ufw enable   # если ufw ещё не включён
+sudo ufw enable
 sudo ufw status
 ```
+
+У RUVDS (и у большинства облачных провайдеров) есть ещё файрвол на уровне
+хостинга, отдельно от `ufw` внутри сервера — проверь в личном кабинете
+раздел «Файрвол»: по умолчанию там пусто (значит всё разрешено), но если
+там уже есть правила — добавь туда порт 80 тоже, иначе `ufw` снаружи не
+поможет.
 
 Клонируй репозиторий:
 
@@ -55,10 +69,34 @@ nano .env.prod
 Файл `.env.prod` в git не попадает (в `.gitignore`) — трогать его руками
 на сервере и всё.
 
-## 3. Первый ручной деплой
+## 3. Получить образы в GHCR (один раз, до первого деплоя)
+
+Пока в `main` не было ни одного пуша после появления
+`.github/workflows/ci-cd.yml` — образов в GHCR ещё нет, `docker compose
+pull` на сервере пока пулить нечего. Смёрджи/запушь текущие изменения в
+`main` (или просто дождись, если уже запушено) и проверь в GitHub →
+вкладка **Actions**, что прогон `build-and-push` позеленел.
+
+После первого успешного пуша образы появятся на странице **Packages**
+профиля/организации репозитория, но по умолчанию GHCR делает их
+**приватными** — даже если сам репозиторий публичный. Сделай их публичными
+один раз (иначе на сервере `docker pull` без логина не сработает):
+
+1. github.com → твой профиль → **Packages**.
+2. Открой каждый из трёх пакетов: `board-games-backend`, `board-games-admin`,
+   `board-games-frontend`.
+3. **Package settings** → **Change visibility** → **Public**.
+
+Так на сервере не понадобится `docker login` и токены — просто анонимный
+`pull`. Если предпочитаешь держать образы приватными — тогда придётся
+один раз выполнить на сервере `docker login ghcr.io` с personal access
+token (scope `read:packages`).
+
+## 4. Первый ручной деплой
 
 ```bash
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 docker compose -f docker-compose.prod.yml ps
 ```
 
@@ -74,7 +112,7 @@ curl -I http://localhost/admin/
 `http://<IP>/admin/` (логин — `DJANGO_SUPERUSER_USERNAME`/`DJANGO_SUPERUSER_PASSWORD`
 из `.env.prod`).
 
-## 4. Настроить автодеплой в GitHub
+## 5. Настроить автодеплой в GitHub
 
 В репозитории → Settings → Secrets and variables → Actions → New repository
 secret:
@@ -87,6 +125,9 @@ secret:
 | `SSH_PORT` | опционально, если SSH не на 22 |
 | `DEPLOY_PATH` | опционально, если репозиторий не в `/opt/board-games` |
 
+`GITHUB_TOKEN` для пуша образов в GHCR заводить не нужно — он у GitHub
+Actions встроенный, работает сам по себе.
+
 Приватный ключ для `SSH_PRIVATE_KEY` — заведи отдельную пару именно под
 деплой (не переиспользуй личный `~/.ssh/id_ed25519`):
 
@@ -98,20 +139,29 @@ cat deploy_key.pub >> ~/.ssh/authorized_keys   # выполнить на сер�
 # содержимое deploy_key (приватный) целиком — в секрет SSH_PRIVATE_KEY
 ```
 
-После этого пуш/мердж в `main` гоняет `build-and-test`, и если всё зелёное —
-job `deploy` заходит по SSH и выполняет `git reset --hard origin/main` +
-`docker compose ... up -d --build`.
+После этого пуш/мердж в `main` гоняет `build-and-test` → `build-and-push`
+(собирает образы и пушит в GHCR) → `deploy` (заходит по SSH, делает `git
+reset --hard origin/main`, затем `docker compose pull && up -d`). Сборка
+целиком происходит на раннерах GitHub — сервер только скачивает готовые
+образы, никакой нагрузки на его CPU/RAM.
 
-## 5. Откат
+## 6. Откат
 
-Если новый деплой сломался:
+Каждый образ в GHCR пушится с двумя тегами: `latest` и SHA коммита. Чтобы
+откатиться на конкретную версию — не обязательно трогать git на сервере,
+достаточно указать тег в `.env.prod`:
 
 ```bash
 cd /opt/board-games
-git log --oneline -5          # найти рабочий коммит
-git reset --hard <commit-sha>
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+git log --oneline -5                     # найти нужный коммит на GitHub
+nano .env.prod                           # раскомментировать/добавить:
+                                          #   IMAGE_TAG=<sha-коммита>
+docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 ```
+
+Чтобы вернуться на актуальную версию — убрать `IMAGE_TAG` из `.env.prod`
+(или поставить `IMAGE_TAG=latest`) и повторить `pull && up -d`.
 
 ## Дальше (по желанию, не сделано сейчас)
 

@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASE: ghcr.io/${{ github.repository }}
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -43,9 +47,63 @@ jobs:
       - name: Docker build frontend (prod)
         run: docker build -f frontend/Dockerfile.prod frontend
 
-  deploy:
+  build-and-push:
     needs: build-and-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Логин в GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Собрать и запушить backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_BASE }}-backend:latest
+            ${{ env.IMAGE_BASE }}-backend:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Собрать и запушить admin
+        uses: docker/build-push-action@v6
+        with:
+          context: ./admin
+          push: true
+          tags: |
+            ${{ env.IMAGE_BASE }}-admin:latest
+            ${{ env.IMAGE_BASE }}-admin:${{ github.sha }}
+          cache-from: type=gha,scope=admin
+          cache-to: type=gha,mode=max,scope=admin
+
+      - name: Собрать и запушить frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.prod
+          push: true
+          build-args: |
+            VITE_API_URL=
+          tags: |
+            ${{ env.IMAGE_BASE }}-frontend:latest
+            ${{ env.IMAGE_BASE }}-frontend:${{ github.sha }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  deploy:
+    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Деплой по SSH
@@ -60,5 +118,6 @@ jobs:
             cd ${{ secrets.DEPLOY_PATH || '/opt/board-games' }}
             git fetch origin main
             git reset --hard origin/main
-            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
             docker image prune -f
