@@ -6,7 +6,7 @@ from django.db.models import Count, QuerySet
 from django.utils.html import format_html
 from martor.widgets import AdminMartorWidget
 
-from games.models import Category, Game, GameImage, Mechanic, Theme
+from games.models import Category, Game, GameImage, GameVideo, Mechanic, Theme
 
 
 class DescriptionMartorWidget(AdminMartorWidget):
@@ -72,6 +72,12 @@ class GameImageInline(admin.TabularInline):
         )
 
 
+class GameVideoInline(admin.TabularInline):
+    model = GameVideo
+    extra = 1
+    fields = ("title", "url", "sort_order")
+
+
 @admin.register(Game)
 class GameAdmin(MarkdownDescriptionMixin, admin.ModelAdmin):
     list_display = (
@@ -95,7 +101,7 @@ class GameAdmin(MarkdownDescriptionMixin, admin.ModelAdmin):
     search_fields = ("title", "title_original", "description", "notes")
     filter_horizontal = ("categories", "themes", "mechanics")
     autocomplete_fields = ("base_game",)
-    inlines = (GameImageInline,)
+    inlines = (GameImageInline, GameVideoInline)
     list_per_page = 30
     save_on_top = True
 

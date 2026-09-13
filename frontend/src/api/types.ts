@@ -19,6 +19,13 @@ export interface GameImage {
   order: number
 }
 
+export interface GameVideo {
+  id: number
+  title: string
+  url: string
+  order: number
+}
+
 export interface GameBrief {
   id: number
   title: string
@@ -52,6 +59,7 @@ export interface GameDetail extends GameListItem {
   rules_url: string
   rules_file: string | null
   images: GameImage[]
+  videos: GameVideo[]
   base_game: GameBrief | null
   expansions: GameBrief[]
 }

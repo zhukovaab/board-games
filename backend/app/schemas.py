@@ -4,7 +4,7 @@ from __future__ import annotations
 import msgspec
 
 from app.config import settings
-from app.models import Game, GameImage, Mechanic, Theme, Category
+from app.models import Game, GameImage, GameVideo, Mechanic, Theme, Category
 
 
 def media_url(path: str) -> str | None:
@@ -32,6 +32,13 @@ class GameImageOut(msgspec.Struct):
     id: int
     image: str | None
     caption: str
+    order: int
+
+
+class GameVideoOut(msgspec.Struct):
+    id: int
+    title: str
+    url: str
     order: int
 
 
@@ -68,6 +75,7 @@ class GameDetail(GameListItem):
     rules_url: str = ""
     rules_file: str | None = None
     images: list[GameImageOut] = []
+    videos: list[GameVideoOut] = []
     base_game: GameBrief | None = None
     expansions: list[GameBrief] = []
 
@@ -105,6 +113,15 @@ def image_out(item: GameImage) -> GameImageOut:
         id=item.id,
         image=media_url(item.image),
         caption=item.caption,
+        order=item.order,
+    )
+
+
+def video_out(item: GameVideo) -> GameVideoOut:
+    return GameVideoOut(
+        id=item.id,
+        title=item.title,
+        url=item.url,
         order=item.order,
     )
 
@@ -149,6 +166,7 @@ def game_detail(game: Game) -> GameDetail:
         rules_url=game.rules_url,
         rules_file=media_url(game.rules_file),
         images=[image_out(i) for i in game.images],
+        videos=[video_out(i) for i in game.videos],
         base_game=game_brief(game.base_game) if game.base_game else None,
         expansions=[game_brief(i) for i in game.expansions],
     )

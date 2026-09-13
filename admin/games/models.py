@@ -183,3 +183,30 @@ class GameImage(models.Model):
 
     def __str__(self) -> str:
         return self.caption or f"Фото #{self.pk}"
+
+
+class GameVideo(models.Model):
+    game = models.ForeignKey(
+        Game,
+        verbose_name="игра",
+        on_delete=models.CASCADE,
+        related_name="videos",
+        db_column="game_id",
+    )
+    title = models.CharField("название", max_length=200, blank=True, default="")
+    url = models.URLField(
+        "ссылка на видео",
+        max_length=500,
+        help_text="Ссылка на YouTube с разбором правил",
+    )
+    sort_order = models.PositiveIntegerField("порядок", default=0)
+
+    class Meta:
+        managed = False
+        db_table = "game_videos"
+        ordering = ["sort_order", "id"]
+        verbose_name = "видеоразбор"
+        verbose_name_plural = "видеоразборы правил"
+
+    def __str__(self) -> str:
+        return self.title or f"Видео #{self.pk}"

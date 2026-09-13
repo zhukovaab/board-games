@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode, type UIEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Lightbox from 'yet-another-react-lightbox'
@@ -11,12 +11,14 @@ import 'yet-another-react-lightbox/plugins/captions.css'
 import 'yet-another-react-lightbox/plugins/thumbnails.css'
 
 import { api, mediaUrl } from '../api/client'
+import type { GameVideo } from '../api/types'
 import { Cover } from '../components/Cover'
 import { Markdown } from '../components/Markdown'
 import { Tag } from '../components/Tag'
 import { ShimmerBlock } from '../components/Skeletons'
 import { ComplexityMeter } from '../components/ComplexityMeter'
 import { ageLabel, complexityInfo, playersLabel, playtimeLabel } from '../lib/format'
+import { loadYouTubeIframeApi, youtubeThumbnailUrl, youtubeVideoId, type YTPlayerInstance } from '../lib/youtube'
 
 function ExternalLinkIcon() {
   return (
@@ -74,6 +76,221 @@ function DocumentIcon() {
   )
 }
 
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="currentColor" aria-hidden>
+      <path d="M8.5 5.5v13l11-6.5-11-6.5Z" />
+    </svg>
+  )
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" aria-hidden>
+      <path
+        d="M6 9.5 12 15l6-5.5"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function OfflineIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="none" aria-hidden>
+      <path
+        d="M3 8.5c5-4 13-4 18 0M6 12c3.2-2.4 8.8-2.4 12 0M9.2 15.5c1.7-1.1 3.9-1.1 5.6 0"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="m3.5 3.5 17 17" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
+      <circle cx="12" cy="19" r="1" fill="currentColor" />
+    </svg>
+  )
+}
+
+function RefreshIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" aria-hidden>
+      <path
+        d="M4.5 12a7.5 7.5 0 0 1 12.6-5.5M19.5 12a7.5 7.5 0 0 1-12.6 5.5"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        strokeLinecap="round"
+      />
+      <path d="M17 4v3.2h-3.2M7 20v-3.2h3.2" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+const VIDEO_LOAD_TIMEOUT = 2500
+
+function VideoRow({
+  video,
+  index,
+  title,
+  isOpen,
+  onToggle,
+}: {
+  video: GameVideo
+  index: number
+  title: string
+  isOpen: boolean
+  onToggle: () => void
+}) {
+  const thumb = youtubeThumbnailUrl(video.url)
+  const videoId = youtubeVideoId(video.url)
+  const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'timeout'>('loading')
+  const [reloadKey, setReloadKey] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const playerElementId = `yt-player-${video.id}`
+
+  useEffect(() => {
+    if (!isOpen || !videoId) return
+    let cancelled = false
+    let player: YTPlayerInstance | null = null
+    setLoadState('loading')
+
+    const timer = setTimeout(() => {
+      setLoadState((current) => (current === 'loaded' ? current : 'timeout'))
+    }, VIDEO_LOAD_TIMEOUT)
+
+    loadYouTubeIframeApi()
+      .then(() => {
+        if (cancelled || !window.YT) return
+        player = new window.YT.Player(playerElementId, {
+          videoId,
+          host: 'https://www.youtube.com',
+          playerVars: { rel: 0 },
+          events: {
+            onReady: () => {
+              if (!cancelled) setLoadState('loaded')
+            },
+            onError: () => {
+              if (!cancelled) setLoadState('timeout')
+            },
+          },
+        })
+      })
+      .catch(() => {
+        if (!cancelled) setLoadState('timeout')
+      })
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+      player?.destroy()
+    }
+  }, [isOpen, videoId, reloadKey, playerElementId])
+
+  return (
+    <motion.div
+      ref={containerRef}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className={`overflow-hidden rounded-2xl border bg-ink-850/70 transition-colors duration-300 ${
+        isOpen ? 'border-accent/50' : 'border-line/70 hover:border-accent/40'
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        disabled={!videoId}
+        className="group flex w-full items-center gap-3 p-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-ink-900">
+          {thumb && (
+            <img src={thumb} alt="" loading="lazy" className="h-full w-full object-cover" />
+          )}
+          <div className="absolute inset-0 flex items-center justify-center bg-ink-950/25 transition-colors duration-300 group-hover:bg-ink-950/10">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-ink-950/70 text-slate-100">
+              <PlayIcon />
+            </div>
+          </div>
+        </div>
+        <span className="flex-1 text-sm font-semibold text-slate-100">{title}</span>
+        {videoId && (
+          <motion.span
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="text-mist"
+          >
+            <ChevronDownIcon />
+          </motion.span>
+        )}
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && videoId && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            onAnimationComplete={(definition) => {
+              const opening =
+                typeof definition === 'object' &&
+                definition !== null &&
+                'height' in definition &&
+                (definition as { height?: string | number }).height === 'auto'
+              if (opening) {
+                containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+              }
+            }}
+          >
+            <div className="relative aspect-video border-t border-line/70 bg-ink-950">
+              <div key={reloadKey} id={playerElementId} className="h-full w-full" />
+              <AnimatePresence>
+                {loadState !== 'loaded' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink-950"
+                  >
+                    {loadState === 'loading' ? (
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-accent-soft" />
+                    ) : (
+                      <div className="pointer-events-auto flex max-w-xs flex-col items-center gap-3 px-6 text-center">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink-800 text-mist">
+                          <OfflineIcon />
+                        </div>
+                        <p className="text-sm font-semibold text-slate-100">Видео не загрузилось</p>
+                        <p className="text-xs leading-relaxed text-mist">
+                          Похоже, YouTube недоступен. Проверьте интернет-соединение.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoadState('loading')
+                            setReloadKey((key) => key + 1)
+                          }}
+                          className="chip hover:border-accent/50 hover:text-slate-100"
+                        >
+                          <RefreshIcon />
+                          обновить
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
 function Stat({ label, value, accent }: { label: string; value: ReactNode; accent?: string }) {
   return (
     <div className="panel p-4">
@@ -102,6 +319,7 @@ function RelatedCard({ slug, title, cover }: { slug: string; title: string; cove
 export function GamePage() {
   const { slug = '' } = useParams()
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [openVideoId, setOpenVideoId] = useState<number | null>(null)
   const [scrollState, setScrollState] = useState({ atStart: true, atEnd: true })
   const galleryScrollRef = useRef<HTMLDivElement>(null)
 
@@ -336,6 +554,24 @@ export function GamePage() {
                 </motion.button>
               ))}
             </div>
+          </div>
+        </section>
+      )}
+
+      {game.videos.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-mist">Разборы правил</h2>
+          <div className="space-y-3">
+            {game.videos.map((video, index) => (
+              <VideoRow
+                key={video.id}
+                video={video}
+                index={index}
+                title={video.title || `Разбор правил ${index + 1}`}
+                isOpen={openVideoId === video.id}
+                onToggle={() => setOpenVideoId((current) => (current === video.id ? null : video.id))}
+              />
+            ))}
           </div>
         </section>
       )}

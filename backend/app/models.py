@@ -138,6 +138,12 @@ class Game(Base):
         order_by="GameImage.order",
         cascade="all, delete-orphan",
     )
+    videos: Mapped[list["GameVideo"]] = relationship(
+        back_populates="game",
+        lazy="selectin",
+        order_by="GameVideo.order",
+        cascade="all, delete-orphan",
+    )
 
 
 class GameImage(Base):
@@ -155,3 +161,22 @@ class GameImage(Base):
     )
 
     game: Mapped[Game] = relationship(back_populates="images")
+
+
+class GameVideo(Base):
+    """Разбор правил на видео (обычно ссылка на YouTube)."""
+
+    __tablename__ = "game_videos"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    game_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("games.id", ondelete="CASCADE"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    url: Mapped[str] = mapped_column(String(500))
+    # "order" — зарезервированное слово в SQL, в БД колонка называется sort_order
+    order: Mapped[int] = mapped_column(
+        "sort_order", Integer, default=0, server_default="0"
+    )
+
+    game: Mapped[Game] = relationship(back_populates="videos")
