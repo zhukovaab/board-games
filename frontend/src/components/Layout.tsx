@@ -1,10 +1,34 @@
 import { motion } from 'framer-motion'
 import { Link, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
+
+// Координаты точек для каждой грани кости (1-6), сетка 32×32.
+const DIE_PIPS: Record<number, [number, number][]> = {
+  1: [[16, 16]],
+  2: [[11, 11], [21, 21]],
+  3: [[11, 11], [16, 16], [21, 21]],
+  4: [[11, 11], [21, 11], [11, 21], [21, 21]],
+  5: [[11, 11], [21, 11], [16, 16], [11, 21], [21, 21]],
+  6: [[11, 10], [21, 10], [11, 16], [21, 16], [11, 22], [21, 22]],
+}
 
 export function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useLocation()
   const isCatalog = pathname === '/'
+  const [dieFace, setDieFace] = useState(5)
+
+  // Бросок: сперва проигрывается whileTap-анимация (короткий взмах),
+  // а затем, будто кость упала, меняем грань на случайную (не повторяя текущую).
+  const rollDie = () => {
+    setTimeout(() => {
+      setDieFace((prev) => {
+        let next = Math.floor(Math.random() * 6) + 1
+        while (next === prev) next = Math.floor(Math.random() * 6) + 1
+        return next
+      })
+    }, 150)
+  }
 
   return (
     <div className="min-h-screen">
@@ -29,6 +53,7 @@ export function Layout({ children }: { children: ReactNode }) {
               className="h-9 w-9 shrink-0"
               tabIndex={-1}
               onMouseDown={(event) => event.preventDefault()}
+              onClick={rollDie}
               whileHover={{ rotate: 18, scale: 1.08 }}
               whileTap={{ rotate: -22, scale: 0.92 }}
               transition={{ type: 'spring', stiffness: 420, damping: 12 }}
@@ -41,11 +66,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 </linearGradient>
               </defs>
               <rect x="3" y="3" width="26" height="26" rx="8" fill="url(#header-die-gradient)" />
-              <circle cx="11" cy="11" r="2.6" fill="#07080C" />
-              <circle cx="21" cy="11" r="2.6" fill="#07080C" />
-              <circle cx="16" cy="16" r="2.6" fill="#07080C" />
-              <circle cx="11" cy="21" r="2.6" fill="#07080C" />
-              <circle cx="21" cy="21" r="2.6" fill="#07080C" />
+              {DIE_PIPS[dieFace].map(([cx, cy]) => (
+                <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2.6" fill="#07080C" />
+              ))}
             </motion.svg>
             <div className="text-sm font-extrabold tracking-tight text-slate-50">
               Домашняя библиотека
