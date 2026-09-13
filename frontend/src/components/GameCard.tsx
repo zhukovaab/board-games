@@ -109,7 +109,7 @@ export const GameCard = forwardRef<HTMLDivElement, Props>(function GameCard(
         </div>
 
         <div className="mt-3 space-y-1.5">
-          <h3 className="line-clamp-2 text-sm font-bold leading-snug text-slate-50 transition-colors duration-200 group-hover:text-accent-soft">
+          <h3 className="line-clamp-2 min-h-[2.4rem] text-sm font-bold leading-snug text-slate-50 transition-colors duration-200 group-hover:text-accent-soft">
             {game.title}
           </h3>
           {(game.categories.length > 0 || game.complexity !== null) && (
