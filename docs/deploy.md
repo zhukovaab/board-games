@@ -38,18 +38,18 @@ sudo ufw status
 там уже есть правила — добавь туда порт 80 тоже, иначе `ufw` снаружи не
 поможет.
 
-Клонируй репозиторий:
+Полный репозиторий на сервере не нужен — образы собираются в CI, сервер
+только их запускает. Нужны ровно два файла: `docker-compose.prod.yml` и
+`.env.prod`. Заведи для них папку и подложи первый файл (дальше CI будет
+сам обновлять его при каждом деплое):
 
 ```bash
 sudo mkdir -p /opt/board-games
 sudo chown $USER:$USER /opt/board-games
-git clone https://github.com/zhukovaab/board-games.git /opt/board-games
 cd /opt/board-games
+curl -O https://raw.githubusercontent.com/zhukovaab/board-games/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/zhukovaab/board-games/main/.env.prod.example
 ```
-
-Если репозиторий приватный — либо клонируй по SSH с deploy-ключом
-(`git clone git@github.com:zhukovaab/board-games.git`), либо через HTTPS с
-personal access token.
 
 ## 2. Завести `.env.prod`
 
@@ -120,7 +120,7 @@ secret:
 | Secret | Значение |
 |---|---|
 | `SSH_HOST` | публичный IP сервера |
-| `SSH_USER` | пользователь для SSH (тот, под кем клонировали репозиторий и кто в группе `docker`) |
+| `SSH_USER` | пользователь для SSH (тот, кто в группе `docker` и владеет `/opt/board-games`) |
 | `SSH_PRIVATE_KEY` | приватный ключ для входа на сервер (лучше отдельный deploy-ключ, не личный) |
 | `SSH_PORT` | опционально, если SSH не на 22 |
 | `DEPLOY_PATH` | опционально, если репозиторий не в `/opt/board-games` |
@@ -140,20 +140,21 @@ cat deploy_key.pub >> ~/.ssh/authorized_keys   # выполнить на сер�
 ```
 
 После этого пуш/мердж в `main` гоняет `build-and-test` → `build-and-push`
-(собирает образы и пушит в GHCR) → `deploy` (заходит по SSH, делает `git
-reset --hard origin/main`, затем `docker compose pull && up -d`). Сборка
-целиком происходит на раннерах GitHub — сервер только скачивает готовые
-образы, никакой нагрузки на его CPU/RAM.
+(собирает образы и пушит в GHCR) → `deploy`: копирует свежий
+`docker-compose.prod.yml` на сервер по SCP и по SSH выполняет
+`docker compose pull && up -d`. Сборка целиком происходит на раннерах
+GitHub — сервер только скачивает готовый файл и готовые образы, никакой
+нагрузки на его CPU/RAM. `.env.prod` при этом не трогается — CI его не
+видит и не перезаписывает, это чисто серверный файл.
 
 ## 6. Откат
 
 Каждый образ в GHCR пушится с двумя тегами: `latest` и SHA коммита. Чтобы
-откатиться на конкретную версию — не обязательно трогать git на сервере,
-достаточно указать тег в `.env.prod`:
+откатиться на конкретную версию — найди нужный коммит в истории на GitHub
+(вкладка **Commits**) и укажи его SHA в `.env.prod`:
 
 ```bash
 cd /opt/board-games
-git log --oneline -5                     # найти нужный коммит на GitHub
 nano .env.prod                           # раскомментировать/добавить:
                                           #   IMAGE_TAG=<sha-коммита>
 docker compose -f docker-compose.prod.yml --env-file .env.prod pull

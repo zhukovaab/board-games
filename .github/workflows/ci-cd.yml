@@ -106,6 +106,19 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Скопировать docker-compose.prod.yml на сервер
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: docker-compose.prod.yml
+          target: ${{ secrets.DEPLOY_PATH || '/opt/board-games' }}
+          overwrite: true
+
       - name: Деплой по SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -116,8 +129,6 @@ jobs:
           script: |
             set -e
             cd ${{ secrets.DEPLOY_PATH || '/opt/board-games' }}
-            git fetch origin main
-            git reset --hard origin/main
             docker compose -f docker-compose.prod.yml --env-file .env.prod pull
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
             docker image prune -f
