@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import type { GameListItem } from '../api/types'
 import { complexityInfo, playersLabel, playtimeLabel } from '../lib/format'
 import { Cover } from './Cover'
+import { ComplexityMeter } from './ComplexityMeter'
 
 const cardVariants = {
   hidden: { opacity: 0, y: 14 },
@@ -84,9 +85,9 @@ export const GameCard = forwardRef<HTMLDivElement, Props>(function GameCard(
                 {game.categories.map((c) => c.name).join(' · ')}
               </span>
               {game.complexity !== null && (
-                <span className={`shrink-0 font-semibold ${complexity.className}`}>
-                  {game.complexity.toFixed(1)}
-                </span>
+                // На карточке — только шкала, без числа: места мало, а цвет и
+                // заливка сами по себе понятно передают уровень сложности.
+                <ComplexityMeter value={game.complexity} className={`shrink-0 text-[13px] ${complexity.className}`} />
               )}
             </div>
           )}

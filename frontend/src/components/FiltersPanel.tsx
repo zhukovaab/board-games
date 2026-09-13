@@ -35,11 +35,19 @@ function Section({
   defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
+  // overflow-hidden нужен только пока идёт анимация высоты — если оставить его
+  // навсегда, он заодно обрезает всё, что легально выходит за рамки блока уже
+  // после раскрытия: свечение бегунка при наведении, кольцо фокуса и т.п.
+  const [settled, setSettled] = useState(defaultOpen)
+
   return (
     <div className="border-b border-line/70 py-4 last:border-none">
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setSettled(false)
+          setOpen((value) => !value)
+        }}
         className="flex w-full items-center justify-between text-left"
       >
         <span className="text-xs font-bold uppercase tracking-[0.14em] text-mist">{title}</span>
@@ -58,7 +66,8 @@ function Section({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
+            onAnimationComplete={() => setSettled(true)}
+            className={settled ? 'overflow-visible' : 'overflow-hidden'}
           >
             <div className="pt-3">{children}</div>
           </motion.div>
@@ -202,8 +211,11 @@ export function FiltersPanel({
           to={state.cmax}
           min={COMPLEXITY_MIN}
           max={COMPLEXITY_MAX}
+          step={1}
           ariaLabel="Сложность"
-          format={(from, to) => `${from.toFixed(1)}–${to.toFixed(1)} из 5`}
+          // Словами, а не тире между цифрами — «2–5» на глаз легко прочитать
+          // как одно число или дробь, особенно рядом с курсором на бегунке.
+          format={(from, to) => (from === to ? `${from} из 5` : `от ${from} до ${to}`)}
           onChange={(from, to) => update({ cmin: from, cmax: to })}
         />
       </Section>

@@ -91,11 +91,20 @@
   .slider-bare::-webkit-slider-thumb {
     @apply pointer-events-auto h-4 w-4 cursor-grab appearance-none rounded-full bg-accent-soft;
     box-shadow: 0 0 0 3px #07080c, 0 0 12px rgba(167, 139, 250, 0.55);
+    transition: transform 0.15s ease;
+  }
+
+  .slider-bare::-webkit-slider-thumb:hover {
+    transform: scale(1.18);
   }
 
   .slider-bare::-moz-range-thumb {
     @apply pointer-events-auto h-4 w-4 cursor-grab rounded-full border-0 bg-accent-soft;
     box-shadow: 0 0 0 3px #07080c, 0 0 12px rgba(167, 139, 250, 0.55);
+  }
+
+  .slider-bare:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px #07080c, 0 0 0 6px rgba(139, 92, 246, 0.45);
   }
 
   .gradient-text {

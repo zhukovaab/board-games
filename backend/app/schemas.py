@@ -53,7 +53,7 @@ class GameListItem(msgspec.Struct):
     best_players: str
     playtime: int | None
     min_age: int | None
-    complexity: float | None
+    complexity: int | None
     has_solo_mode: bool
     is_expansion: bool
     categories: list[TaxonomyOut]
@@ -127,7 +127,7 @@ def _base_fields(game: Game) -> dict:
         "best_players": game.best_players,
         "playtime": game.playtime,
         "min_age": game.min_age,
-        "complexity": float(game.complexity) if game.complexity is not None else None,
+        "complexity": game.complexity,
         "has_solo_mode": game.has_solo_mode,
         "is_expansion": game.is_expansion,
         "categories": [taxonomy_out(i) for i in game.categories],

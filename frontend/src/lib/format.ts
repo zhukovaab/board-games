@@ -23,17 +23,19 @@ export function ageLabel(age: number | null): string {
   return age ? `${age}+` : '—'
 }
 
-const COMPLEXITY_STEPS: { limit: number; label: string; className: string }[] = [
-  { limit: 1.5, label: 'очень просто', className: 'text-emerald-300' },
-  { limit: 2.2, label: 'просто', className: 'text-lime-300' },
-  { limit: 3.0, label: 'средне', className: 'text-amber-300' },
-  { limit: 4.0, label: 'сложно', className: 'text-orange-300' },
-  { limit: 5.1, label: 'хардкор', className: 'text-rose-300' },
-]
+// Сложность — целое число от 1 до 5, поэтому каждому значению соответствует
+// ровно одна ступень, без промежуточных порогов для дробей.
+const COMPLEXITY_STEPS: Record<number, { label: string; className: string }> = {
+  1: { label: 'очень просто', className: 'text-emerald-300' },
+  2: { label: 'просто', className: 'text-lime-300' },
+  3: { label: 'средне', className: 'text-amber-300' },
+  4: { label: 'сложно', className: 'text-orange-300' },
+  5: { label: 'хардкор', className: 'text-rose-300' },
+}
 
 export function complexityInfo(value: number | null) {
   if (value === null) return { label: '—', className: 'text-mist', value: 0 }
-  const step = COMPLEXITY_STEPS.find((s) => value < s.limit) ?? COMPLEXITY_STEPS.at(-1)!
+  const step = COMPLEXITY_STEPS[value] ?? COMPLEXITY_STEPS[5]
   return { label: step.label, className: step.className, value }
 }
 

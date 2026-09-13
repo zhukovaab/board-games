@@ -5,15 +5,12 @@ Django-приложение в admin/ описывает те же таблиц�
 """
 from __future__ import annotations
 
-from decimal import Decimal
-
 from sqlalchemy import (
     BigInteger,
     Boolean,
     Column,
     ForeignKey,
     Integer,
-    Numeric,
     String,
     Table,
     Text,
@@ -100,7 +97,7 @@ class Game(Base):
     best_players: Mapped[str] = mapped_column(String(50), default="", server_default="")
     playtime: Mapped[int | None] = mapped_column(Integer, nullable=True)
     min_age: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    complexity: Mapped[Decimal | None] = mapped_column(Numeric(2, 1), nullable=True)
+    complexity: Mapped[int | None] = mapped_column(Integer, nullable=True)
     has_solo_mode: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="false"
     )

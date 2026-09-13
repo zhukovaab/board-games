@@ -1,15 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { api, mediaUrl } from '../api/client'
 import { Cover } from '../components/Cover'
 import { Tag } from '../components/Tag'
 import { ShimmerBlock } from '../components/Skeletons'
+import { ComplexityMeter } from '../components/ComplexityMeter'
 import { ageLabel, complexityInfo, playersLabel, playtimeLabel } from '../lib/format'
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: string }) {
+function Stat({ label, value, accent }: { label: string; value: ReactNode; accent?: string }) {
   return (
     <div className="panel p-4">
       <div className="text-[11px] uppercase tracking-[0.14em] text-mist">{label}</div>
@@ -115,8 +116,18 @@ export function GamePage() {
             <Stat label="возраст" value={ageLabel(game.min_age)} />
             <Stat
               label="сложность"
-              value={game.complexity !== null ? `${game.complexity.toFixed(1)} · ${complexity.label}` : '—'}
-              accent={complexity.className}
+              value={
+                game.complexity !== null ? (
+                  // Цвет уже несёт сама шкала — общий accent на Stat тут не нужен,
+                  // он бы заодно перекрасил и подпись «средне» рядом.
+                  <span className="flex items-center gap-2">
+                    <ComplexityMeter value={game.complexity} className={`text-2xl ${complexity.className}`} />
+                    <span className="text-xs font-semibold text-mist">{complexity.label}</span>
+                  </span>
+                ) : (
+                  '—'
+                )
+              }
             />
           </div>
 

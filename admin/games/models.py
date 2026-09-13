@@ -90,13 +90,11 @@ class Game(models.Model):
     )
     playtime = models.PositiveIntegerField("время партии, мин", null=True, blank=True)
     min_age = models.PositiveIntegerField("возраст от", null=True, blank=True)
-    complexity = models.DecimalField(
+    complexity = models.PositiveSmallIntegerField(
         "сложность",
-        max_digits=2,
-        decimal_places=1,
         null=True,
         blank=True,
-        help_text="От 1.0 (совсем просто) до 5.0 (хардкор)",
+        help_text="От 1 (совсем просто) до 5 (хардкор)",
     )
     has_solo_mode = models.BooleanField("есть соло-режим", default=False)
 

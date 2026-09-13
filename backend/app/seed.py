@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import asyncio
-from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,7 +46,7 @@ async def _create_game(
         best_players=data.get("best_players", ""),
         playtime=data.get("playtime"),
         min_age=data.get("min_age"),
-        complexity=Decimal(data["complexity"]) if data.get("complexity") else None,
+        complexity=data.get("complexity"),
         has_solo_mode=data.get("has_solo_mode", False),
         is_expansion=bool(data.get("base_game")),
         location=data.get("location", ""),

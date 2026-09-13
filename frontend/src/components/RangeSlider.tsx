@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 
 const TRACK_EMPTY = '#1E2331'
 
@@ -10,7 +10,7 @@ function Head({
   label,
   onReset,
 }: {
-  label: string
+  label: ReactNode
   onReset: (() => void) | null
 }) {
   return (
@@ -119,7 +119,8 @@ interface DualProps {
   min: number
   max: number
   step?: number
-  format: (from: number, to: number) => string
+  /** Может вернуть не только текст, но и, например, шкалу сложности. */
+  format: (from: number, to: number) => ReactNode
   onChange: (from: number | null, to: number | null) => void
   ariaLabel: string
 }
@@ -135,7 +136,7 @@ export function DualRangeSlider({
   to,
   min,
   max,
-  step = 0.5,
+  step = 1,
   format,
   onChange,
   ariaLabel,
