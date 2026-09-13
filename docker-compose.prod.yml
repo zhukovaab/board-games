@@ -2,6 +2,18 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - shared_buffers=32MB
+      - -c
+      - max_connections=20
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=16MB
+      - -c
+      - effective_cache_size=64MB
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -29,6 +41,12 @@ services:
       sh -c "alembic upgrade head &&
              if [ $${SEED_ON_START:-0} = 1 ]; then python -m app.seed; fi &&
              litestar --app app.main:app run --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/filters', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   admin:
     image: ghcr.io/zhukovaab/board-games-admin:${IMAGE_TAG:-latest}
@@ -40,7 +58,7 @@ services:
       - media:/media
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
       db:
         condition: service_healthy
     command: >
@@ -49,6 +67,12 @@ services:
              python manage.py ensure_superuser &&
              python manage.py collectstatic --noinput &&
              gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 1"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/admin/login/', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   frontend:
     image: ghcr.io/zhukovaab/board-games-frontend:${IMAGE_TAG:-latest}
@@ -56,8 +80,10 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
-      - admin
+      backend:
+        condition: service_healthy
+      admin:
+        condition: service_healthy
 
 volumes:
   pgdata:
