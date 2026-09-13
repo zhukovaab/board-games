@@ -11,11 +11,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
-ALLOWED_HOSTS = [
-    h.strip()
-    for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
-    if h.strip()
-]
+ALLOWED_HOSTS = list(
+    {"localhost", "127.0.0.1", "0.0.0.0"}
+    | {
+        h.strip()
+        for h in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
+        if h.strip()
+    }
+)
 _csrf_trusted_env = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = (
     [origin.strip() for origin in _csrf_trusted_env.split(",") if origin.strip()]
